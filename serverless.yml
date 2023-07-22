@@ -1,0 +1,80 @@
+service: slack-emoji-paccho
+
+frameworkVersion: "3"
+
+provider:
+  name: aws
+  runtime: python3.9
+  region: ap-northeast-1
+  stage: ${opt:stage, "prd"}
+  logRetentionInDays: 7
+  timeout: 60
+  memorySize: 512
+  iam:
+    role:
+      statements:
+      - Effect: Allow
+        Action:
+          - dynamodb:Scan
+          - dynamodb:BatchWriteItem
+          - dynamodb:DescribeTable
+        Resource: 
+          - arn:aws:dynamodb:${self:provider.region}:*:table/${self:service}-${self:provider.stage}-emoji
+          - arn:aws:dynamodb:${self:provider.region}:*:table/${self:service}-${self:provider.stage}-channel
+
+  environment:
+    DYNAMODB_REGION: ${self:provider.region}
+    DYNAMODB_EMOJI_TABLE_NAME: ${self:service}-${self:provider.stage}-emoji
+    DYNAMODB_CHANNEL_TABLE_NAME: ${self:service}-${self:provider.stage}-channel
+    SLACK_BOT_TOKEN: ${env:SLACK_BOT_TOKEN}
+    SLACK_EMOJI_CHANNEL_ID: ${env:SLACK_EMOJI_CHANNEL_ID}
+    SLACK_CHANNEL_CHANNEL_ID: ${env:SLACK_CHANNEL_CHANNEL_ID}
+
+package:
+  patterns:
+    - "!**"
+    - src/**
+
+functions:
+  post_new_emoji:
+    handler: src/post_new_emoji.lambda_handler
+    events:
+      - schedule:
+          rate: cron(30 8 * * ? *)
+  post_new_channel:
+    handler: src/post_new_channel.lambda_handler
+    events:
+      - schedule:
+          rate: cron(45 8 * * ? *)
+
+resources:
+  Resources:
+    SlackEmojies:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:service}-${self:provider.stage}-emoji
+        AttributeDefinitions:
+          - AttributeName: name
+            AttributeType: S
+        KeySchema:
+          - AttributeName: name
+            KeyType: HASH
+        BillingMode: PAY_PER_REQUEST
+    SlackChannels:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:service}-${self:provider.stage}-channel
+        AttributeDefinitions:
+          - AttributeName: channel_id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: channel_id
+            KeyType: HASH
+        BillingMode: PAY_PER_REQUEST
+
+plugins:
+  - serverless-python-requirements
+
+custom:
+  pythonRequirements:
+    dockerizePip: non-linux

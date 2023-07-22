@@ -1,0 +1,16 @@
+{
+  "name": "slack-emoji-paccho",
+  "version": "1.0.0",
+  "author": "Yuuki Takahashi <20282867+yktakaha4@users.noreply.github.com>",
+  "license": "MIT",
+  "scripts": {
+    "lint": "poetry run black --check src/ && poetry run isort --check src/",
+    "fix": "poetry run black src/ && poetry run isort src/",
+    "build": "sls package",
+    "deploy": "sls deploy"
+  },
+  "devDependencies": {
+    "serverless": "^3.2.0",
+    "serverless-python-requirements": "^5.3.1"
+  }
+}

@@ -1,0 +1,53 @@
+name: Check
+on: pull_request
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: "16"
+
+      - uses: actions/setup-python@v2
+        with:
+          python-version: "3.9"
+
+      - uses: abatilo/actions-poetry@v2.0.0
+        with:
+          poetry-version: "1.2.0a2"
+
+      - run: yarn && poetry install
+
+      - run: yarn build
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+          SLACK_CHANNEL_CHANNEL_ID: ${{ secrets.SLACK_CHANNEL_CHANNEL_ID }}
+          SLACK_EMOJI_CHANNEL_ID: ${{ secrets.SLACK_EMOJI_CHANNEL_ID }}
+
+  lint:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: "16"
+
+      - uses: actions/setup-python@v2
+        with:
+          python-version: "3.9"
+
+      - uses: abatilo/actions-poetry@v2.0.0
+        with:
+          poetry-version: "1.2.0a2"
+
+      - run: yarn && poetry install
+
+      - run: yarn lint
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+          SLACK_CHANNEL_CHANNEL_ID: ${{ secrets.SLACK_CHANNEL_CHANNEL_ID }}
+          SLACK_EMOJI_CHANNEL_ID: ${{ secrets.SLACK_EMOJI_CHANNEL_ID }}

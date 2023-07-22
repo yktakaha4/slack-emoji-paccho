@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "slack-emoji-paccho"
+version = "0.1.0"
+description = ""
+authors = ["Yuuki Takahashi <20282867+yktakaha4@users.noreply.github.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+pynamodb = "^5.2.1"
+slackclient = "^2.9.4"
+black = "^22.8.0"
+isort = "^5.10.1"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

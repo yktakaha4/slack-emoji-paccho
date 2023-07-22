@@ -1,0 +1,40 @@
+name: Deploy(production)
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-22.04
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: aws-actions/configure-aws-credentials@v1
+        with:
+          role-to-assume: arn:aws:iam::${{ secrets.ORG_AWS_ACCOUNT_ID }}:role/github-actions-sls-deploy-role
+          aws-region: ap-northeast-1
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: "16"
+
+      - uses: actions/setup-python@v2
+        with:
+          python-version: "3.9"
+
+      - uses: abatilo/actions-poetry@v2.0.0
+        with:
+          poetry-version: "1.2.0a2"
+
+      - run: yarn && poetry install
+
+      - run: yarn deploy
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+          SLACK_CHANNEL_CHANNEL_ID: ${{ secrets.SLACK_CHANNEL_CHANNEL_ID }}
+          SLACK_EMOJI_CHANNEL_ID: ${{ secrets.SLACK_EMOJI_CHANNEL_ID }}
